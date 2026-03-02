@@ -621,9 +621,24 @@ function confirmDelete(evt,id,title){
 function renderAll(){renderHeatmap();renderBookLibrary();}
 
 // ── Book Search ──
-async function searchOpenLibrary(title,author){const p=new URLSearchParams({title,limit:'5',fields:'title,author_name,number_of_pages_median,cover_i'});if(author)p.set('author',author);const r=await fetch('https://openlibrary.org/search.json?'+p);if(!r.ok)return null;const d=await r.json();if(!d.docs?.length)return null;return d.docs.map(x=>({coverUrl:x.cover_i?'https://covers.openlibrary.org/b/id/'+x.cover_i+'-M.jpg':null,totalPages:x.number_of_pages_median||null,title:x.title||null,author:x.author_name?.[0]||null}));}
-async function searchGoogleBooks(title,author){let q='intitle:'+title;if(author)q+='+inauthor:'+author;const r=await fetch('https://www.googleapis.com/books/v1/volumes?q='+encodeURIComponent(q)+'&maxResults=5&printType=books');if(!r.ok)return null;const d=await r.json();if(!d.items?.length)return null;return d.items.map(x=>{const i=x.volumeInfo;let c=i.imageLinks?.thumbnail||null;if(c)c=c.replace('http://','https://');return{coverUrl:c,totalPages:i.pageCount||null,title:i.title||null,author:i.authors?.[0]||null};});}
-async function searchBooks(title,author){try{const r=await searchOpenLibrary(title,author);if(r?.length)return r;}catch{}try{const r=await searchGoogleBooks(title,author);if(r)return r;}catch{}return[];}
+async function searchGoogleBooks(title,author){
+  let q='intitle:'+title;if(author)q+='+inauthor:'+author;
+  const r=await fetch('https://www.googleapis.com/books/v1/volumes?q='+encodeURIComponent(q)+'&maxResults=5&printType=books');
+  if(!r.ok)return null;const d=await r.json();if(!d.items?.length)return null;
+  return d.items.map(x=>{const i=x.volumeInfo;let c=i.imageLinks?.thumbnail||null;if(c)c=c.replace('http://','https://');return{coverUrl:c,totalPages:i.pageCount||null,title:i.title||null,author:i.authors?.[0]||null};});
+}
+async function searchOpenLibrary(title,author){
+  const p=new URLSearchParams({q:title,limit:'5'});if(author)p.set('author',author);
+  const ctrl=new AbortController();const tid=setTimeout(()=>ctrl.abort(),5000);
+  const r=await fetch('https://openlibrary.org/search.json?'+p,{signal:ctrl.signal});clearTimeout(tid);
+  if(!r.ok)return null;const d=await r.json();if(!d.docs?.length)return null;
+  return d.docs.map(x=>({coverUrl:x.cover_i?'https://covers.openlibrary.org/b/id/'+x.cover_i+'-M.jpg':null,totalPages:x.number_of_pages_median||null,title:x.title||null,author:x.author_name?.[0]||null}));
+}
+async function searchBooks(title,author){
+  try{const r=await searchGoogleBooks(title,author);if(r?.length)return r;}catch(e){console.log('Google Books failed:',e);}
+  try{const r=await searchOpenLibrary(title,author);if(r?.length)return r;}catch(e){console.log('Open Library failed:',e);}
+  return[];
+}
 
 // ── Modals ──
 function showModal(html){document.getElementById('modal-root').innerHTML='<div class="modal-overlay" onclick="if(event.target===this)hideModal()"><div class="modal">'+html+'</div></div>';}
