@@ -6,7 +6,7 @@ Single HTML file. No build step. Works anywhere.
 
 ## Live
 
-**[https://divyanaras.github.io/bookmap2026-/](https://divyanaras.github.io/bookmap2026-/)**
+**[https://divyanaras.github.io/bookmap/](https://divyanaras.github.io/bookmap/)**
 
 ## What it does
 
@@ -34,6 +34,4 @@ Want to run your own instance? See [HOW-IT-WORKS.md](HOW-IT-WORKS.md) for the fu
 |-----------|------------|
 | Warm amber heatmap, dark card backgrounds | Same layout, cream/parchment tones |
 
-## Credits
-
-Built by [@divyanaras](https://github.com/divyanaras). Design inspired by the BookMap feature on [divyanaras.com](https://divyanaras.com).
+Built by [@divyanaras](https://github.com/divyanaras). Design inspired similar to [divyanaras.com](https://divyanaras.com).
