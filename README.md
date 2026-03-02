@@ -6,7 +6,7 @@ Single HTML file. No build step. Works anywhere.
 
 ## Live
 
-**[divyanaras.github.io/bookmap-project-2026](https://divyanaras.github.io/bookmap-project-2026/)**
+**[divyanaras.github.io/bookmap-project-2026](https://divyanaras.github.io/bookmap2026-/)**
 
 ## What it does
 
