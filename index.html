@@ -539,7 +539,7 @@ function selHM(d){heatmapSelectedDate=heatmapSelectedDate===d?null:d;renderHeatm
 function renderBookLibrary() {
   const el=document.getElementById('book-library');
   const reading=books.filter(b=>b.status==='reading'),finished=books.filter(b=>b.status==='finished');
-  document.getElementById('btn-log').disabled=reading.length===0;
+  document.getElementById('btn-log').disabled=books.length===0;
   document.getElementById('btn-ss').disabled=books.length===0;
 
   if(!books.length){el.innerHTML='<div class="empty-state">no books yet. add one to get started.</div>';return;}
@@ -662,10 +662,14 @@ function pickResult(i){const r=searchResults[i];if(!r)return;if(r.title)document
 async function subAddBook(){const t=document.getElementById('ab-t').value.trim(),a=document.getElementById('ab-a').value.trim(),p=parseInt(document.getElementById('ab-p').value)||0,c=document.getElementById('ab-c').value||null;if(!t||!a){alert('title and author are required');return;}await dbAddBook({title:t,author:a,totalPages:p,coverUrl:c});hideModal();await loadAll();}
 
 function openLogSessionModal(preId){
-  const reading=books.filter(b=>b.status==='reading');if(!reading.length){alert('no books being read');return;}
+  if(!books.length){alert('no books added yet');return;}
+  const reading=books.filter(b=>b.status==='reading'),finished=books.filter(b=>b.status==='finished');
   const logDate=heatmapSelectedDate||today();
   let h='<h2>log a session</h2>';
-  h+='<div class="field"><label>book</label><select id="ls-b">';reading.forEach(b=>{h+='<option value="'+b.id+'"'+(b.id===preId?' selected':'')+'>'+esc(b.title)+'</option>';});h+='</select></div>';
+  h+='<div class="field"><label>book</label><select id="ls-b">';
+  if(reading.length){reading.forEach(b=>{h+='<option value="'+b.id+'"'+(b.id===preId?' selected':'')+'>'+esc(b.title)+'</option>';});}
+  if(finished.length){h+='<optgroup label="finished">';finished.forEach(b=>{h+='<option value="'+b.id+'"'+(b.id===preId?' selected':'')+'>'+esc(b.title)+'</option>';});h+='</optgroup>';}
+  h+='</select></div>';
   h+='<div class="field"><label>intensity</label><div class="intensity-grid">';
   h+='<button type="button" class="intensity-btn" onclick="pickInt(this,1)"><div>light</div><div class="desc">skimming or a few pages</div></button>';
   h+='<button type="button" class="intensity-btn active" onclick="pickInt(this,2)"><div>moderate</div><div class="desc">a solid session</div></button>';
