@@ -8,7 +8,7 @@
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  /* ─── Light mode (exact from index.css :root) ─── */
+  /* ─── Light mode ─── */
   :root, html.light {
     --background: hsl(45, 30%, 96%);
     --foreground: hsl(30, 10%, 15%);
@@ -29,7 +29,7 @@
     --muted-40: hsla(30, 15%, 75%, 0.4);
   }
 
-  /* ─── Dark mode (exact from index.css .dark) ─── */
+  /* ─── Dark mode ─── */
   html.dark {
     --background: hsl(25, 15%, 10%);
     --foreground: hsl(40, 20%, 92%);
@@ -50,34 +50,84 @@
   }
 
   body {
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif;
+    font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
     background: var(--background); color: var(--foreground);
     line-height: 1.5; min-height: 100vh; -webkit-font-smoothing: antialiased;
   }
   input, select, textarea, button { font: inherit; color: inherit; }
   input::placeholder, textarea::placeholder { color: var(--muted-foreground); }
 
-  /* ─── Auth ─── */
-  #auth-screen {
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    min-height: 100vh; padding: 24px;
+  /* ─── Auth: blurred preview background ─── */
+  #auth-screen { position: relative; min-height: 100vh; overflow: hidden; }
+
+  .auth-preview {
+    position: absolute; inset: 0; z-index: 0;
+    filter: blur(6px); opacity: 0.5; pointer-events: none;
+    padding: 64px 24px 80px;
   }
-  .auth-card {
-    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
-    padding: 32px; width: 100%; max-width: 380px;
+  .auth-preview .preview-wrap {
+    max-width: 512px; margin: 0 auto;
   }
-  .auth-card h1 { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 4px; }
-  .auth-card .sub { color: var(--muted-foreground); font-size: 13px; margin-bottom: 24px; }
-  .auth-tabs {
-    display: flex; margin-bottom: 20px; background: var(--muted); border-radius: 9999px; padding: 3px;
+  .auth-preview .preview-header {
+    font-size: 28px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 24px;
   }
-  .auth-tabs button {
-    flex: 1; padding: 8px 0; text-align: center; font-size: 13px; font-weight: 500;
-    cursor: pointer; border: none; background: none; color: var(--muted-foreground);
-    border-radius: 9999px; transition: all 0.2s;
+  .auth-preview .preview-year { font-size: 13px; color: var(--muted-foreground); margin-top: 2px; }
+  .preview-heatmap { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 24px; }
+  .preview-cell { width: 16px; height: 16px; border-radius: 3px; flex-shrink: 0; }
+  .preview-card {
+    border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 12px;
   }
-  .auth-tabs button.active { background: var(--foreground); color: var(--background); font-weight: 600; }
-  .auth-error { font-size: 12px; color: hsl(0, 70%, 55%); margin-bottom: 12px; min-height: 16px; }
+  .preview-bar { height: 6px; background: var(--muted); border-radius: 9999px; margin-top: 12px; }
+  .preview-bar-fill { height: 100%; border-radius: 9999px; background: var(--amber-500); }
+  .preview-title-ph { height: 14px; width: 60%; background: var(--muted); border-radius: 4px; margin-bottom: 6px; }
+  .preview-author-ph { height: 10px; width: 40%; background: var(--muted); border-radius: 4px; opacity: 0.6; }
+
+  /* Auth nav — top right corner */
+  .auth-nav {
+    position: absolute; top: 24px; right: 24px; z-index: 10;
+    display: flex; gap: 20px; align-items: center;
+  }
+  .auth-nav-link {
+    font-size: 13px; color: var(--muted-foreground); cursor: pointer;
+    background: none; border: none; padding: 0; transition: color 0.2s;
+    text-decoration: none; letter-spacing: -0.2px;
+  }
+  .auth-nav-link:hover { color: var(--foreground); }
+  .auth-nav-link.active { color: var(--foreground); font-weight: 500; }
+
+  /* Auth form — subtle, positioned */
+  .auth-form-wrap {
+    position: absolute; top: 60px; right: 24px; z-index: 10;
+    width: 280px; animation: fadeIn 0.2s ease;
+  }
+  .auth-form-wrap.hidden { display: none; }
+  .auth-greeting {
+    font-size: 13px; color: var(--muted-foreground); margin-bottom: 14px;
+    line-height: 1.6; letter-spacing: -0.1px;
+  }
+  .auth-form-wrap .field { margin-bottom: 10px; }
+  .auth-form-wrap .field input {
+    width: 100%; padding: 7px 10px; background: var(--card); border: 1px solid var(--border);
+    border-radius: calc(var(--radius) - 2px); font-size: 13px; outline: none;
+    transition: border-color 0.15s; color: var(--foreground);
+  }
+  .auth-form-wrap .field input:focus { border-color: var(--primary); }
+  .auth-form-wrap .field input::placeholder { font-size: 12px; }
+  .auth-error { font-size: 11px; color: hsl(0, 70%, 55%); margin-bottom: 8px; min-height: 14px; }
+  .auth-go {
+    font-size: 12px; color: var(--muted-foreground); cursor: pointer;
+    background: none; border: none; padding: 0; transition: color 0.15s;
+    text-decoration: underline; text-underline-offset: 2px;
+  }
+  .auth-go:hover { color: var(--foreground); }
+  .auth-go:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* Bookmap title on auth screen */
+  .auth-title {
+    position: absolute; bottom: 40px; left: 24px; z-index: 10;
+  }
+  .auth-title h1 { font-size: 32px; font-weight: 700; letter-spacing: -0.5px; }
+  .auth-title p { font-size: 13px; color: var(--muted-foreground); margin-top: 2px; }
 
   /* ─── Shared form elements ─── */
   .field { margin-bottom: 14px; }
@@ -105,14 +155,13 @@
   .btn-sm { padding: 5px 12px; font-size: 12px; }
   .btn-outline { background: var(--background); }
 
-  /* ─── App layout (matches BookMap.tsx: max-w-lg, centered, pt-24 md:pt-16) ─── */
+  /* ─── App layout ─── */
   #app-screen { display: none; }
   .app-wrap {
     max-width: 512px; width: 100%; margin: 0 auto;
     padding: 64px 24px 80px; min-height: 100vh; position: relative;
   }
 
-  /* Back link area — like the website nav */
   .back-link {
     display: flex; align-items: center; gap: 6px; font-size: 13px;
     color: var(--muted-foreground); margin-bottom: 28px; cursor: pointer;
@@ -120,7 +169,6 @@
   }
   .back-link:hover { color: var(--foreground); }
 
-  /* Header — matches BookMap.tsx exactly */
   .app-header {
     display: flex; align-items: center; justify-content: space-between;
     margin-bottom: 28px;
@@ -129,7 +177,24 @@
   .app-header .year { font-size: 13px; color: var(--muted-foreground); margin-top: 2px; }
   .header-btns { display: flex; gap: 8px; flex-wrap: wrap; }
 
-  /* Theme toggle — fixed top-right like ThemeToggle on website */
+  /* Welcome back card */
+  .welcome-back {
+    margin-bottom: 24px; padding: 16px; border: 1px solid var(--border);
+    border-radius: var(--radius); animation: fadeIn 0.3s ease;
+  }
+  .welcome-back p { font-size: 13px; color: var(--muted-foreground); line-height: 1.7; }
+  .welcome-back .wb-cta {
+    display: inline; font-size: 13px; color: var(--foreground); font-weight: 500;
+    cursor: pointer; background: none; border: none; padding: 0;
+    text-decoration: underline; text-underline-offset: 2px;
+  }
+  .welcome-back .wb-dismiss {
+    float: right; font-size: 11px; color: var(--muted-foreground); opacity: 0.5;
+    cursor: pointer; background: none; border: none; padding: 0;
+  }
+  .welcome-back .wb-dismiss:hover { opacity: 1; }
+
+  /* Theme toggle */
   .theme-toggle {
     position: fixed; top: 16px; right: 16px; z-index: 50;
     background: var(--card); border: 1px solid var(--border); border-radius: 9999px;
@@ -176,7 +241,7 @@
   @keyframes fadeIn { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:translateY(0)} }
   .heatmap-empty { padding: 24px 0; text-align: center; color: var(--muted-foreground); font-size: 13px; }
 
-  /* ─── Filter chips (rounded-full, matching BookLibrary.tsx) ─── */
+  /* ─── Filter chips ─── */
   .filter-chips { display: flex; gap: 8px; margin-bottom: 12px; }
   .chip {
     padding: 6px 12px; border-radius: 9999px; font-size: 12px; font-weight: 500;
@@ -187,7 +252,7 @@
   .chip.active { background: var(--foreground); color: var(--background); opacity: 1; }
   .chip .cnt { margin-left: 4px; opacity: 0.7; }
 
-  /* ─── Book cards (matching BookCard.tsx: border border-border rounded-lg p-4) ─── */
+  /* ─── Book cards ─── */
   .book-card {
     border: 1px solid var(--border); border-radius: var(--radius); padding: 16px;
     margin-bottom: 12px; transition: all 0.15s;
@@ -212,7 +277,6 @@
   .delete-btn:hover { opacity: 1; }
   .delete-btn.confirm { color: hsl(0, 70%, 55%); opacity: 1; }
 
-  /* Progress (matching BookCard.tsx mt-3 + justify-between meta) */
   .progress-area { margin-top: 12px; }
   .progress-meta { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted-foreground); margin-bottom: 8px; }
   .slider-row { margin-bottom: 4px; }
@@ -250,7 +314,6 @@
   .finish-note-text { font-size: 13px; }
   .quote-box { font-style: italic; font-size: 12px; color: var(--muted-foreground); margin-top: 6px; padding-left: 10px; border-left: 2px solid var(--border); }
 
-  /* Year reads button (matching BookMap.tsx) */
   .year-reads-btn {
     width: 100%; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px;
     background: none; cursor: pointer; text-align: left; color: var(--foreground);
@@ -318,31 +381,90 @@
 </head>
 <body>
 
-<!-- Auth -->
+<!-- Auth screen: blurred bookmap preview + subtle corner auth -->
 <div id="auth-screen">
-  <div class="auth-card">
-    <h1>bookmap</h1>
-    <p class="sub">track your reading, one page at a time.</p>
-    <div class="auth-tabs">
-      <button type="button" class="active" id="tab-signin" onclick="switchAuthTab('signin')">sign in</button>
-      <button type="button" id="tab-signup" onclick="switchAuthTab('signup')">sign up</button>
+  <!-- Blurred fake bookmap preview -->
+  <div class="auth-preview">
+    <div class="preview-wrap">
+      <div class="preview-header">Bookmap <span class="preview-year" id="preview-year"></span></div>
+      <div class="preview-heatmap" id="preview-heatmap"></div>
+      <div class="preview-card">
+        <div style="display:flex;gap:12px;align-items:flex-start">
+          <div style="width:48px;height:72px;border-radius:6px;background:var(--muted);flex-shrink:0"></div>
+          <div style="flex:1">
+            <div class="preview-title-ph"></div>
+            <div class="preview-author-ph"></div>
+            <div class="preview-bar"><div class="preview-bar-fill" style="width:65%"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="preview-card">
+        <div style="display:flex;gap:12px;align-items:flex-start">
+          <div style="width:48px;height:72px;border-radius:6px;background:var(--muted);flex-shrink:0"></div>
+          <div style="flex:1">
+            <div class="preview-title-ph" style="width:45%"></div>
+            <div class="preview-author-ph" style="width:30%"></div>
+            <div class="preview-bar"><div class="preview-bar-fill" style="width:30%"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="preview-card">
+        <div style="display:flex;gap:12px;align-items:flex-start">
+          <div style="width:48px;height:72px;border-radius:6px;background:var(--muted);flex-shrink:0"></div>
+          <div style="flex:1">
+            <div class="preview-title-ph" style="width:70%"></div>
+            <div class="preview-author-ph" style="width:35%"></div>
+            <div class="preview-bar"><div class="preview-bar-fill finished" style="width:100%"></div></div>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="auth-error" id="auth-error"></div>
-    <form onsubmit="handleAuth(event)">
-      <div class="field"><label>email</label><input type="email" id="auth-email" required placeholder="you@email.com"></div>
-      <div class="field"><label>password</label><input type="password" id="auth-password" required placeholder="min 6 characters" minlength="6"></div>
-      <button type="submit" class="btn btn-primary btn-block" id="auth-submit">sign in</button>
+  </div>
+
+  <!-- Title bottom-left -->
+  <div class="auth-title">
+    <h1>bookmap</h1>
+    <p>track your reading, one page at a time.</p>
+  </div>
+
+  <!-- Nav links top-right -->
+  <div class="auth-nav">
+    <button type="button" class="auth-nav-link" id="nav-new" onclick="showAuthForm('signup')">yo, i'm new</button>
+    <button type="button" class="auth-nav-link" id="nav-old" onclick="showAuthForm('signin')">heya, old user here</button>
+  </div>
+
+  <!-- Sign up form -->
+  <div class="auth-form-wrap hidden" id="form-signup">
+    <div class="auth-greeting">just give us an email and a strong password, and you're through :)</div>
+    <div class="auth-error" id="signup-error"></div>
+    <form onsubmit="handleAuth(event,'signup')">
+      <div class="field"><input type="email" id="signup-email" required placeholder="email"></div>
+      <div class="field"><input type="password" id="signup-password" required placeholder="password (min 6 chars)" minlength="6"></div>
+      <button type="submit" class="auth-go" id="signup-btn">let's go &rarr;</button>
+    </form>
+  </div>
+
+  <!-- Sign in form -->
+  <div class="auth-form-wrap hidden" id="form-signin">
+    <div class="auth-greeting">sign in and you're in.</div>
+    <div class="auth-error" id="signin-error"></div>
+    <form onsubmit="handleAuth(event,'signin')">
+      <div class="field"><input type="email" id="signin-email" required placeholder="email"></div>
+      <div class="field"><input type="password" id="signin-password" required placeholder="password" minlength="6"></div>
+      <button type="submit" class="auth-go" id="signin-btn">let me in &rarr;</button>
     </form>
   </div>
 </div>
 
 <!-- App -->
 <div id="app-screen">
-  <!-- Theme toggle (top-right, like ThemeToggle on website) -->
   <button type="button" class="theme-toggle" onclick="toggleTheme()" id="theme-btn" title="Toggle theme">&#9790;</button>
 
   <div class="app-wrap">
-    <!-- Header (matches BookMap.tsx) -->
+    <!-- Welcome back message -->
+    <div id="welcome-back"></div>
+
+    <!-- Header -->
     <div class="app-header">
       <div>
         <h1>Bookmap</h1>
@@ -361,7 +483,7 @@
     <!-- Book Library -->
     <section id="book-library"></section>
 
-    <!-- Sign out at bottom -->
+    <!-- Sign out -->
     <div style="margin-top:40px;text-align:center">
       <button type="button" class="back-link" style="display:inline-flex;margin:0 auto" onclick="handleSignOut()">sign out</button>
     </div>
@@ -394,28 +516,56 @@ function toggleTheme() {
   if (saved === 'light') { document.documentElement.classList.remove('dark'); document.documentElement.classList.add('light'); }
 })();
 
-// ── Auth ──
-let authMode = 'signin';
-function switchAuthTab(mode) {
-  authMode = mode;
-  document.getElementById('tab-signin').classList.toggle('active', mode === 'signin');
-  document.getElementById('tab-signup').classList.toggle('active', mode === 'signup');
-  document.getElementById('auth-submit').textContent = mode === 'signin' ? 'sign in' : 'sign up';
-  document.getElementById('auth-error').textContent = '';
+// ── Auth preview heatmap (fake data for visual effect) ──
+function renderPreviewHeatmap() {
+  const el = document.getElementById('preview-heatmap');
+  const el2 = document.getElementById('preview-year');
+  if (el2) el2.textContent = currentYear;
+  if (!el) return;
+  let h = '';
+  // Generate ~90 cells with random levels for visual effect
+  const levels = [0,0,0,0,0,0,1,1,1,2,2,3,4];
+  for (let i = 0; i < 91; i++) {
+    const l = levels[Math.floor(Math.random() * levels.length)];
+    h += '<div class="preview-cell h' + l + '"></div>';
+  }
+  el.innerHTML = h;
 }
 
-async function handleAuth(e) {
+// ── Auth ──
+function showAuthForm(mode) {
+  document.getElementById('form-signup').classList.toggle('hidden', mode !== 'signup');
+  document.getElementById('form-signin').classList.toggle('hidden', mode !== 'signin');
+  document.getElementById('nav-new').classList.toggle('active', mode === 'signup');
+  document.getElementById('nav-old').classList.toggle('active', mode === 'signin');
+  // Focus the email field
+  const emailId = mode === 'signup' ? 'signup-email' : 'signin-email';
+  setTimeout(() => document.getElementById(emailId)?.focus(), 100);
+}
+
+async function handleAuth(e, mode) {
   e.preventDefault();
-  if (!sb) { document.getElementById('auth-error').textContent = 'Supabase not connected. Check your URL and anon key (should start with eyJ...).'; return; }
-  const email = document.getElementById('auth-email').value.trim();
-  const password = document.getElementById('auth-password').value;
-  const errEl = document.getElementById('auth-error'), btn = document.getElementById('auth-submit');
-  errEl.textContent = ''; btn.disabled = true; btn.textContent = 'loading...';
+  if (!sb) {
+    const errEl = document.getElementById(mode + '-error');
+    errEl.textContent = 'Supabase not connected. Check your URL and anon key.';
+    return;
+  }
+  const email = document.getElementById(mode + '-email').value.trim();
+  const password = document.getElementById(mode + '-password').value;
+  const errEl = document.getElementById(mode + '-error');
+  const btn = document.getElementById(mode + '-btn');
+  errEl.textContent = ''; btn.disabled = true; btn.textContent = 'one sec...';
   try {
-    const result = authMode === 'signup' ? await sb.auth.signUp({email, password}) : await sb.auth.signInWithPassword({email, password});
+    const result = mode === 'signup'
+      ? await sb.auth.signUp({ email, password })
+      : await sb.auth.signInWithPassword({ email, password });
     if (result.error) throw result.error;
-  } catch (err) { errEl.textContent = err.message || 'something went wrong'; }
-  finally { btn.disabled = false; btn.textContent = authMode === 'signin' ? 'sign in' : 'sign up'; }
+  } catch (err) {
+    errEl.textContent = err.message || 'something went wrong';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = mode === 'signup' ? "let's go \u2192" : 'let me in \u2192';
+  }
 }
 
 async function handleSignOut() { if (sb) await sb.auth.signOut(); }
@@ -423,13 +573,64 @@ if (sb) sb.auth.onAuthStateChange((_, session) => {
   if (session?.user) { currentUser = session.user; showApp(); } else { currentUser = null; showAuth(); }
 });
 
-function showAuth() { document.getElementById('auth-screen').style.display = 'flex'; document.getElementById('app-screen').style.display = 'none'; }
+function showAuth() {
+  document.getElementById('auth-screen').style.display = 'block';
+  document.getElementById('app-screen').style.display = 'none';
+  renderPreviewHeatmap();
+}
 function showApp() {
   document.getElementById('auth-screen').style.display = 'none';
   document.getElementById('app-screen').style.display = 'block';
   document.getElementById('header-year').textContent = currentYear;
   document.getElementById('theme-btn').innerHTML = document.documentElement.classList.contains('dark') ? '&#9790;' : '&#9788;';
   loadAll();
+}
+
+// ── Welcome back ──
+function renderWelcomeBack() {
+  const el = document.getElementById('welcome-back');
+  if (!el) return;
+
+  // Only show for returning users who have reading books
+  const readingBooks = books.filter(b => b.status === 'reading');
+  if (!readingBooks.length || !sessions.length) { el.innerHTML = ''; return; }
+
+  // Find last session date
+  const sortedSessions = [...sessions].sort((a, b) => b.date.localeCompare(a.date));
+  const lastDate = sortedSessions[0]?.date;
+  if (!lastDate) { el.innerHTML = ''; return; }
+
+  // Calculate days since last session
+  const last = new Date(lastDate + 'T00:00:00');
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  const diffDays = Math.round((now - last) / (1000 * 60 * 60 * 24));
+
+  // Don't show if they read today
+  if (diffDays === 0) { el.innerHTML = ''; return; }
+
+  // Find most recently active reading book
+  const bookSessionMap = {};
+  for (const s of sortedSessions) {
+    if (!bookSessionMap[s.book_id]) bookSessionMap[s.book_id] = s.date;
+  }
+  let activeBook = null;
+  for (const b of readingBooks) {
+    if (bookSessionMap[b.id]) { activeBook = b; break; }
+  }
+  if (!activeBook) activeBook = readingBooks[0];
+
+  const daysText = diffDays === 1 ? '1 day' : diffDays + ' days';
+  const pageInfo = activeBook.total_pages > 0
+    ? 'page ' + (activeBook.current_page || 0) + ' of ' + activeBook.title
+    : activeBook.title;
+
+  let h = '<div class="welcome-back">';
+  h += '<button type="button" class="wb-dismiss" onclick="this.closest(\'.welcome-back\').remove()">&times;</button>';
+  h += '<p>okay welcome back. it\'s been ' + daysText + '. you were on ' + pageInfo + '.</p>';
+  h += '<p><button type="button" class="wb-cta" onclick="this.closest(\'.welcome-back\').remove()">pick up where you left off &rarr;</button></p>';
+  h += '</div>';
+  el.innerHTML = h;
 }
 
 // ── DB ──
@@ -618,7 +819,7 @@ function confirmDelete(evt,id,title){
   else{btn.classList.add('confirm');btn.innerHTML='&#10007;';clearTimeout(deleteTimers[id]);deleteTimers[id]=setTimeout(()=>{btn.classList.remove('confirm');btn.innerHTML='&#128465;';},3000);}
 }
 
-function renderAll(){renderHeatmap();renderBookLibrary();}
+function renderAll(){renderWelcomeBack();renderHeatmap();renderBookLibrary();}
 
 // ── Book Search ──
 async function searchGoogleBooks(title,author){
