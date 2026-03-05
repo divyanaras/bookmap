@@ -88,7 +88,7 @@
     display: flex; gap: 20px; align-items: center;
   }
   .auth-nav-link {
-    font-size: 13px; color: var(--muted-foreground); cursor: pointer;
+    font-size: 15px; color: var(--muted-foreground); cursor: pointer;
     background: none; border: none; padding: 0; transition: color 0.2s;
     text-decoration: none; letter-spacing: -0.2px;
   }
@@ -102,40 +102,36 @@
   }
   .auth-form-wrap.hidden { display: none; }
   .auth-greeting {
-    font-size: 13px; color: var(--muted-foreground); margin-bottom: 14px;
-    line-height: 1.6; letter-spacing: -0.1px;
+    font-size: 14px; color: var(--muted-foreground); margin-bottom: 14px;
+    line-height: 1.7; letter-spacing: -0.1px;
   }
   .auth-form-wrap .field { margin-bottom: 10px; }
   .auth-form-wrap .field input {
-    width: 100%; padding: 7px 10px; background: var(--card); border: 1px solid var(--border);
-    border-radius: calc(var(--radius) - 2px); font-size: 13px; outline: none;
+    width: 100%; padding: 8px 12px; background: var(--card); border: 1px solid var(--border);
+    border-radius: calc(var(--radius) - 2px); font-size: 14px; outline: none;
     transition: border-color 0.15s; color: var(--foreground);
   }
   .auth-form-wrap .field input:focus { border-color: var(--primary); }
-  .auth-form-wrap .field input::placeholder { font-size: 12px; }
-  .auth-error { font-size: 11px; color: hsl(0, 70%, 55%); margin-bottom: 8px; min-height: 14px; }
+  .auth-form-wrap .field input::placeholder { font-size: 13px; }
+  .auth-error { font-size: 12px; color: hsl(0, 70%, 55%); margin-bottom: 8px; min-height: 16px; }
   .auth-go {
-    font-size: 12px; color: var(--muted-foreground); cursor: pointer;
+    font-size: 14px; color: var(--muted-foreground); cursor: pointer;
     background: none; border: none; padding: 0; transition: color 0.15s;
-    text-decoration: underline; text-underline-offset: 2px;
+    text-decoration: underline; text-underline-offset: 3px;
   }
   .auth-go:hover { color: var(--foreground); }
   .auth-go:disabled { opacity: 0.4; cursor: not-allowed; }
 
-  /* Bookmap title on auth screen */
-  .auth-title {
-    position: absolute; bottom: 40px; left: 24px; z-index: 10;
-  }
-  .auth-title h1 { font-size: 32px; font-weight: 700; letter-spacing: -0.5px; }
-  .auth-title p { font-size: 13px; color: var(--muted-foreground); margin-top: 2px; }
-
-  /* Center welcome blurb */
+  /* Center welcome blurb (title + description together) */
   .auth-center {
     position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10;
-    max-width: 400px; width: 100%; text-align: center; padding: 0 24px;
+    max-width: 440px; width: 100%; text-align: center; padding: 0 24px;
+  }
+  .auth-center h1 {
+    font-size: 36px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 16px;
   }
   .auth-center p {
-    font-size: 14px; color: var(--muted-foreground); line-height: 1.8; letter-spacing: -0.1px;
+    font-size: 15px; color: var(--muted-foreground); line-height: 1.9; letter-spacing: -0.1px;
   }
 
   /* ─── Shared form elements ─── */
@@ -432,13 +428,8 @@
 
   <!-- Center welcome blurb -->
   <div class="auth-center">
+    <h1>Bookmap 2026</h1>
     <p>yo fren, welcome to bookmap — your personal heatmap but for the books you read. do come here to log, check your reads for the year, and log some memorable lines from your favorites. have fun reading :)))</p>
-  </div>
-
-  <!-- Title bottom-left -->
-  <div class="auth-title">
-    <h1>bookmap</h1>
-    <p>track your reading, one page at a time.</p>
   </div>
 
   <!-- Nav links top-right -->
