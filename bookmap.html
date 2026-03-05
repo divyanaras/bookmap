@@ -129,6 +129,15 @@
   .auth-title h1 { font-size: 32px; font-weight: 700; letter-spacing: -0.5px; }
   .auth-title p { font-size: 13px; color: var(--muted-foreground); margin-top: 2px; }
 
+  /* Center welcome blurb */
+  .auth-center {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10;
+    max-width: 400px; width: 100%; text-align: center; padding: 0 24px;
+  }
+  .auth-center p {
+    font-size: 14px; color: var(--muted-foreground); line-height: 1.8; letter-spacing: -0.1px;
+  }
+
   /* ─── Shared form elements ─── */
   .field { margin-bottom: 14px; }
   .field label { display: block; font-size: 12px; color: var(--muted-foreground); margin-bottom: 4px; }
@@ -421,6 +430,11 @@
     </div>
   </div>
 
+  <!-- Center welcome blurb -->
+  <div class="auth-center">
+    <p>yo fren, welcome to bookmap — your personal heatmap but for the books you read. do come here to log, check your reads for the year, and log some memorable lines from your favorites. have fun reading :)))</p>
+  </div>
+
   <!-- Title bottom-left -->
   <div class="auth-title">
     <h1>bookmap</h1>
@@ -655,7 +669,7 @@ async function dbAddBook(data) {
     total_pages: data.totalPages || 0, cover_url: data.coverUrl || null,
     status: 'reading', current_page: 0, start_date: today(),
   }).select().single();
-  if (error) { console.error('addBook:', error); alert('Error: ' + error.message + '\n\nHint: make sure you ran the SQL schema and your API key starts with eyJ...'); return null; }
+  if (error) { console.error('addBook:', error); alert('couldn\'t add book: ' + (error.message || 'connection failed') + '\n\nif this keeps happening, check that your Supabase anon key in the code starts with eyJ... (it\'s a long JWT token from Settings > API).'); return null; }
   return book;
 }
 
@@ -743,7 +757,7 @@ function renderBookLibrary() {
   document.getElementById('btn-log').disabled=books.length===0;
   document.getElementById('btn-ss').disabled=books.length===0;
 
-  if(!books.length){el.innerHTML='<div class="empty-state">no books yet. add one to get started.</div>';return;}
+  if(!books.length){el.innerHTML='<div class="empty-state">no books so far? get started by adding one real quick!</div>';return;}
 
   let h='<div class="filter-chips">';
   h+='<button type="button" class="chip'+(libraryTab==='reading'?' active':'')+'" onclick="setTab(\'reading\')">reading<span class="cnt">'+reading.length+'</span></button>';
@@ -907,7 +921,17 @@ function openScreenshotModal(){
   const recent=[...books].sort((a,b)=>{const ad=sessions.filter(s=>s.book_id===a.id).map(s=>s.date).sort().pop()||a.start_date,bd=sessions.filter(s=>s.book_id===b.id).map(s=>s.date).sort().pop()||b.start_date;return bd.localeCompare(ad);}).slice(0,5);
   let h='<h2>Bookmap '+currentYear+'</h2>';
   const days=buildHeatmapData(currentYear),weeks=groupByWeek(days);
-  if(weeks.length){h+='<div style="overflow-x:auto;margin-bottom:20px"><div style="display:inline-flex;flex-direction:column;gap:1px;min-width:max-content"><div class="heatmap-cols">';weeks.forEach(w=>{h+='<div class="heatmap-col">';w.forEach(d=>{h+='<div class="hm '+(!d.date?'he':'h'+d.level)+'"></div>';});h+='</div>';});h+='</div></div></div>';}
+  if(weeks.length){
+    const ml=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],mp=[];let lm=-1;
+    weeks.forEach((w,i)=>{for(const d of w){if(!d.date)continue;const m=new Date(d.date+'T00:00:00').getMonth();if(m!==lm){mp.push({l:ml[m],c:i});lm=m;}break;}});
+    const dl=['','Mon','','Wed','','Fri',''];
+    h+='<div style="overflow-x:auto;margin-bottom:20px"><div style="display:inline-flex;flex-direction:column;gap:1px;min-width:max-content">';
+    h+='<div class="heatmap-months">';weeks.forEach((_,i)=>{const m=mp.find(x=>x.c===i);h+='<div class="heatmap-month">'+(m?m.l:'')+'</div>';});h+='</div>';
+    h+='<div class="heatmap-grid"><div class="heatmap-days">';dl.forEach(l=>{h+='<div class="heatmap-day-label">'+l+'</div>';});h+='</div>';
+    h+='<div class="heatmap-cols">';weeks.forEach(w=>{h+='<div class="heatmap-col">';w.forEach(d=>{h+='<div class="hm '+(!d.date?'he':'h'+d.level)+'"></div>';});h+='</div>';});
+    h+='</div></div></div></div>';
+    h+='<div class="heatmap-legend"><span>less</span><div class="legend-cell h0"></div><div class="legend-cell h1"></div><div class="legend-cell h2"></div><div class="legend-cell h3"></div><div class="legend-cell h4"></div><span>more</span></div>';
+  }
   if(recent.length){h+='<p class="ss-label">latest reads</p>';recent.forEach((b,i)=>{
     h+='<div class="ss-book">'+(b.cover_url?'<img src="'+esc(b.cover_url)+'">':'<div class="ss-cover-ph"><span>'+esc(b.title)+'</span></div>')+'<div class="book-info"><div class="book-title">'+esc(b.title)+'</div><div class="book-author">'+esc(b.author)+'</div>';
     const pct=b.total_pages>0?Math.round(((b.current_page||0)/b.total_pages)*100):(b.current_page||0);
