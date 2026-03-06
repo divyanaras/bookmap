@@ -182,6 +182,51 @@
   .app-header .year { font-size: 13px; color: var(--muted-foreground); margin-top: 2px; }
   .header-btns { display: flex; gap: 8px; flex-wrap: wrap; }
 
+  /* Onboarding guide (right side) */
+  .onboarding-guide {
+    position: fixed; top: 80px; right: 32px; z-index: 50;
+    width: 320px; max-height: calc(100vh - 120px); overflow-y: auto;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px 22px 22px;
+    animation: fadeIn 0.3s ease;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+  }
+  .onboarding-guide .ob-dismiss {
+    position: absolute; top: 10px; right: 14px; background: none; border: none;
+    font-size: 18px; color: var(--muted-foreground); cursor: pointer; opacity: 0.6;
+    transition: opacity 0.15s; line-height: 1;
+  }
+  .onboarding-guide .ob-dismiss:hover { opacity: 1; }
+  .onboarding-guide .ob-hey { font-size: 15px; font-weight: 600; margin-bottom: 10px; }
+  .onboarding-guide .ob-body { font-size: 13px; color: var(--muted-foreground); line-height: 1.8; }
+  .onboarding-guide .ob-body .ob-step {
+    margin-bottom: 6px; padding-left: 0;
+  }
+  .onboarding-guide .ob-body .ob-step span.ob-num {
+    color: var(--primary); font-weight: 600;
+  }
+  .onboarding-guide .ob-cheers {
+    font-size: 13px; color: var(--muted-foreground); margin-top: 12px; line-height: 1.7;
+  }
+  /* "a quick hello" — right corner, same y as header buttons */
+  .ob-reopen {
+    position: fixed; top: 72px; right: 24px; z-index: 49;
+    font-size: 12px; color: var(--muted-foreground); cursor: pointer;
+    background: none; border: none; padding: 0;
+    text-decoration: underline; text-underline-offset: 3px;
+    text-decoration-color: var(--border);
+    transition: color 0.15s;
+  }
+  .ob-reopen:hover { color: var(--foreground); text-decoration-color: var(--foreground); }
+
+  @media (max-width: 960px) {
+    .onboarding-guide {
+      position: relative; top: auto; right: auto;
+      width: 100%; margin-bottom: 20px;
+      box-shadow: none;
+    }
+  }
+
   /* Welcome back card */
   .welcome-back {
     margin-bottom: 24px; padding: 16px; border: 1px solid var(--border);
@@ -465,8 +510,12 @@
 <!-- App -->
 <div id="app-screen">
   <button type="button" class="theme-toggle" onclick="toggleTheme()" id="theme-btn" title="Toggle theme">&#9790;</button>
+  <button type="button" class="ob-reopen" id="ob-reopen-btn" onclick="reopenOnboarding()" style="display:none">a quick hello</button>
 
   <div class="app-wrap">
+    <!-- Onboarding guide for new users -->
+    <div id="onboarding-guide"></div>
+
     <!-- Welcome back message -->
     <div id="welcome-back"></div>
 
@@ -566,8 +615,25 @@ async function handleAuth(e, mode) {
       ? await sb.auth.signUp({ email, password })
       : await sb.auth.signInWithPassword({ email, password });
     if (result.error) throw result.error;
+    // Supabase signUp returns a user with identities=[] if email already exists
+    if (mode === 'signup' && result.data?.user && result.data.user.identities?.length === 0) {
+      errEl.textContent = 'hey, you\'re already a user — try signing in instead';
+      return;
+    }
   } catch (err) {
-    errEl.textContent = err.message || 'something went wrong';
+    const msg = (err.message || '').toLowerCase();
+    if (mode === 'signin' && (msg.includes('invalid') || msg.includes('credentials') || msg.includes('wrong'))) {
+      errEl.textContent = 'can\'t find these creds in my db — check your email/password?';
+    } else if (mode === 'signup' && msg.includes('already')) {
+      errEl.textContent = 'hey, you\'re already a user — try signing in instead';
+    } else if (msg.includes('email') && msg.includes('valid')) {
+      errEl.textContent = 'that doesn\'t look like a valid email';
+    } else if (msg.includes('password') && (msg.includes('short') || msg.includes('length') || msg.includes('6'))) {
+      errEl.textContent = 'password needs to be at least 6 characters';
+    } else {
+      errEl.textContent = err.message || 'something went wrong';
+    }
+    return;
   } finally {
     btn.disabled = false;
     btn.textContent = mode === 'signup' ? "let's go \u2192" : 'let me in \u2192';
@@ -637,6 +703,61 @@ function renderWelcomeBack() {
   h += '<p><button type="button" class="wb-cta" onclick="this.closest(\'.welcome-back\').remove()">pick up where you left off &rarr;</button></p>';
   h += '</div>';
   el.innerHTML = h;
+}
+
+// ── Onboarding guide (new users) ──
+function renderOnboardingGuideContent() {
+  let h = '<div class="onboarding-guide">';
+  h += '<button type="button" class="ob-dismiss" onclick="dismissOnboarding()">&times;</button>';
+  h += '<div class="ob-hey">heyya!</div>';
+  h += '<div class="ob-body">';
+  h += 'glad max to meet w another reader fren. here\'s all you need to do to track your reads if you\'re borderline mathematical about reading just like me.';
+  h += '<div style="margin-top:10px">';
+  h += '<div class="ob-step"><span class="ob-num">1/</span> add the current book(s) you\'re reading</div>';
+  h += '<div class="ob-step"><span class="ob-num">2/</span> move the sliders to match your current progress</div>';
+  h += '<div class="ob-step"><span class="ob-num">3/</span> add some books you\'ve finished as well incase you wanna maintain a 2026 list \u2014 all you need to do is move the sliders to 100% after adding</div>';
+  h += '<div class="ob-step"><span class="ob-num">4/</span> log your progress bindass and your tile automatically gets filled. do that for any day of this year so far</div>';
+  h += '<div class="ob-step"><span class="ob-num">5/</span> add some lines you remember from the book/say how you liked it in a line (that\'s my favorite part of reading btw)</div>';
+  h += '<div class="ob-step"><span class="ob-num">6/</span> view your reads so far and share a screenshot of it to your other friends if you like</div>';
+  h += '</div>';
+  h += '</div>';
+  h += '<div class="ob-cheers">that\'s it. that\'s just it. cheers!<br>- divya</div>';
+  h += '</div>';
+  return h;
+}
+
+let onboardingDismissed = false;
+
+function renderOnboardingGuide() {
+  const el = document.getElementById('onboarding-guide');
+  const reopenBtn = document.getElementById('ob-reopen-btn');
+  if (!el) return;
+
+  // New user (no books, no sessions) — auto-show unless they dismissed it this session
+  if (books.length === 0 && sessions.length === 0 && !onboardingDismissed) {
+    el.innerHTML = renderOnboardingGuideContent();
+    if (reopenBtn) reopenBtn.style.display = 'none';
+    return;
+  }
+
+  // Guide not showing — show the "a quick hello" link in top-right
+  el.innerHTML = '';
+  if (reopenBtn) reopenBtn.style.display = '';
+}
+
+function dismissOnboarding() {
+  onboardingDismissed = true;
+  const el = document.getElementById('onboarding-guide');
+  const reopenBtn = document.getElementById('ob-reopen-btn');
+  if (el) el.innerHTML = '';
+  if (reopenBtn) reopenBtn.style.display = '';
+}
+
+function reopenOnboarding() {
+  const el = document.getElementById('onboarding-guide');
+  const reopenBtn = document.getElementById('ob-reopen-btn');
+  if (el) el.innerHTML = renderOnboardingGuideContent();
+  if (reopenBtn) reopenBtn.style.display = 'none';
 }
 
 // ── DB ──
@@ -825,7 +946,7 @@ function confirmDelete(evt,id,title){
   else{btn.classList.add('confirm');btn.innerHTML='&#10007;';clearTimeout(deleteTimers[id]);deleteTimers[id]=setTimeout(()=>{btn.classList.remove('confirm');btn.innerHTML='&#128465;';},3000);}
 }
 
-function renderAll(){renderWelcomeBack();renderHeatmap();renderBookLibrary();}
+function renderAll(){try{renderOnboardingGuide();}catch(e){console.error('onboarding error:',e);}renderWelcomeBack();renderHeatmap();renderBookLibrary();}
 
 // ── Book Search ──
 async function searchGoogleBooks(title,author){
