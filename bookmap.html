@@ -133,6 +133,16 @@
   }
   .auth-go:hover { color: var(--foreground); }
   .auth-go:disabled { opacity: 0.4; cursor: not-allowed; }
+  .auth-forgot { margin-top: 10px; }
+  .auth-forgot.hidden { display: none; }
+  .auth-forgot-link {
+    font-size: 12px; color: var(--muted-foreground); cursor: pointer;
+    background: none; border: none; padding: 0;
+    text-decoration: underline; text-underline-offset: 3px;
+    text-decoration-color: var(--border); transition: color 0.15s;
+  }
+  .auth-forgot-link:hover { color: var(--foreground); text-decoration-color: var(--foreground); }
+  .auth-forgot-msg { font-size: 12px; color: var(--green); margin-top: 6px; min-height: 16px; }
 
   /* Center welcome blurb (title + description together) */
   .auth-center {
@@ -505,6 +515,8 @@
       <div class="field"><input type="password" id="signup-password" required placeholder="password (min 6 chars)" minlength="6"></div>
       <button type="submit" class="auth-go" id="signup-btn">let's go &rarr;</button>
     </form>
+    <div class="auth-forgot hidden" id="signup-forgot"><button type="button" class="auth-forgot-link" onclick="forgotPassword('signup')">forgot password?</button></div>
+    <div class="auth-forgot-msg" id="signup-forgot-msg"></div>
   </div>
 
   <!-- Sign in form -->
@@ -516,6 +528,8 @@
       <div class="field"><input type="password" id="signin-password" required placeholder="password" minlength="6"></div>
       <button type="submit" class="auth-go" id="signin-btn">let me in &rarr;</button>
     </form>
+    <div class="auth-forgot" id="signin-forgot"><button type="button" class="auth-forgot-link" onclick="forgotPassword('signin')">forgot password?</button></div>
+    <div class="auth-forgot-msg" id="signin-forgot-msg"></div>
   </div>
 </div>
 
@@ -622,6 +636,10 @@ async function handleAuth(e, mode) {
   const errEl = document.getElementById(mode + '-error');
   const btn = document.getElementById(mode + '-btn');
   errEl.textContent = ''; btn.disabled = true; btn.textContent = 'one sec...';
+  const forgotEl = document.getElementById(mode + '-forgot');
+  const forgotMsg = document.getElementById(mode + '-forgot-msg');
+  if (forgotEl) forgotEl.classList.add('hidden');
+  if (forgotMsg) forgotMsg.textContent = '';
   try {
     const result = mode === 'signup'
       ? await sb.auth.signUp({ email, password })
@@ -630,14 +648,17 @@ async function handleAuth(e, mode) {
     // Supabase signUp returns a user with identities=[] if email already exists
     if (mode === 'signup' && result.data?.user && result.data.user.identities?.length === 0) {
       errEl.textContent = 'hey, you\'re already a user — try signing in instead';
+      if (forgotEl) forgotEl.classList.remove('hidden');
       return;
     }
   } catch (err) {
     const msg = (err.message || '').toLowerCase();
     if (mode === 'signin' && (msg.includes('invalid') || msg.includes('credentials') || msg.includes('wrong'))) {
       errEl.textContent = 'can\'t find these creds in my db — check your email/password?';
+      if (forgotEl) forgotEl.classList.remove('hidden');
     } else if (mode === 'signup' && msg.includes('already')) {
       errEl.textContent = 'hey, you\'re already a user — try signing in instead';
+      if (forgotEl) forgotEl.classList.remove('hidden');
     } else if (msg.includes('email') && msg.includes('valid')) {
       errEl.textContent = 'that doesn\'t look like a valid email';
     } else if (msg.includes('password') && (msg.includes('short') || msg.includes('length') || msg.includes('6'))) {
@@ -650,6 +671,17 @@ async function handleAuth(e, mode) {
     btn.disabled = false;
     btn.textContent = mode === 'signup' ? "let's go \u2192" : 'let me in \u2192';
   }
+}
+
+async function forgotPassword(mode) {
+  const email = document.getElementById(mode + '-email').value.trim();
+  const msgEl = document.getElementById(mode + '-forgot-msg');
+  if (!email) { msgEl.textContent = 'enter your email above first'; msgEl.style.color = 'var(--muted-foreground)'; return; }
+  if (!sb) return;
+  msgEl.textContent = 'sending...'; msgEl.style.color = 'var(--muted-foreground)';
+  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: 'https://divyanaras.github.io/bookmap/' });
+  if (error) { msgEl.textContent = 'couldn\'t send reset email — ' + error.message; msgEl.style.color = 'hsl(0, 70%, 55%)'; }
+  else { msgEl.textContent = 'reset link sent! check your inbox'; msgEl.style.color = 'var(--green)'; }
 }
 
 async function handleSignOut() { if (sb) await sb.auth.signOut(); }
