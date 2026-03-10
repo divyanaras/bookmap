@@ -267,7 +267,7 @@
 
   /* ─── Heatmap ─── */
   .heatmap-section { margin-bottom: 28px; }
-  .heatmap-wrap { overflow-x: auto; }
+  .heatmap-wrap { overflow-x: auto; padding: 0 4px 6px 0; }
   .heatmap-wrap::-webkit-scrollbar { display: none; }
   .heatmap-months { display: flex; gap: 4px; margin-left: 30px; margin-bottom: 4px; }
   .heatmap-month { width: 16px; font-size: 10px; color: var(--muted-foreground); flex-shrink: 0; font-weight: 500; }
@@ -855,7 +855,7 @@ function renderHeatmap() {
   weeks.forEach((w,i)=>{for(const d of w){if(!d.date)continue;const m=new Date(d.date+'T00:00:00').getMonth();if(m!==lm){mp.push({l:ml[m],c:i});lm=m;}break;}});
   const dl=['','Mon','','Wed','','Fri',''];
 
-  let h='<div class="heatmap-wrap"><div style="display:inline-flex;flex-direction:column;gap:1px;min-width:max-content">';
+  let h='<div class="heatmap-wrap"><div style="display:inline-flex;flex-direction:column;gap:1px;min-width:max-content;padding-bottom:4px">';
   h+='<div class="heatmap-months">';weeks.forEach((_,i)=>{const m=mp.find(x=>x.c===i);h+='<div class="heatmap-month">'+(m?m.l:'')+'</div>';});h+='</div>';
   h+='<div class="heatmap-grid"><div class="heatmap-days">';dl.forEach(l=>{h+='<div class="heatmap-day-label">'+l+'</div>';});h+='</div>';
   h+='<div class="heatmap-cols">';
