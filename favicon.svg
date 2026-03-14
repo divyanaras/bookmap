@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <rect width="32" height="32" rx="6" fill="#1a1410"/>
+  <g transform="translate(6, 5)">
+    <!-- Book spine -->
+    <rect x="2" y="2" width="3" height="18" rx="1" fill="#d97706"/>
+    <!-- Book pages -->
+    <rect x="5" y="1" width="13" height="20" rx="2" fill="#f5f0e8" stroke="#d97706" stroke-width="0.5"/>
+    <!-- Page lines -->
+    <line x1="8" y1="6" x2="15" y2="6" stroke="#d4c8b0" stroke-width="0.8"/>
+    <line x1="8" y1="9" x2="14" y2="9" stroke="#d4c8b0" stroke-width="0.8"/>
+    <line x1="8" y1="12" x2="15" y2="12" stroke="#d4c8b0" stroke-width="0.8"/>
+    <line x1="8" y1="15" x2="12" y2="15" stroke="#d4c8b0" stroke-width="0.8"/>
+  </g>
+</svg>
