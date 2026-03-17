@@ -15,7 +15,7 @@ function openAddBookModal() {
   let h = '<h2>add a book</h2>';
   h += '<div class="field"><label>title</label><input type="text" id="ab-t" placeholder="The Great Gatsby" oninput="onSearch()"></div>';
   h += '<div id="sr-box"></div>';
-  h += '<div class="field"><label>author</label><input type="text" id="ab-a" placeholder="F. Scott Fitzgerald"></div>';
+  h += '<div class="field"><label>author</label><input type="text" id="ab-a" placeholder="F. Scott Fitzgerald" oninput="onSearch()"></div>';
   h += '<div class="field"><label>total pages <span style="opacity:0.5">(optional)</span></label><input type="number" id="ab-p" placeholder="180" min="0"></div>';
   h += '<input type="hidden" id="ab-c"><div id="ab-cv" style="margin-bottom:12px"></div>';
   h += '<div class="modal-actions"><button type="button" class="btn btn-outline" onclick="hideModal()">cancel</button><button type="button" class="btn btn-primary" onclick="subAddBook()">start reading</button></div>';
@@ -25,10 +25,11 @@ function openAddBookModal() {
 function onSearch() {
   clearTimeout(searchTimeout);
   const t = document.getElementById('ab-t').value.trim();
+  const a = document.getElementById('ab-a')?.value.trim() || '';
   if (t.length < 3) { document.getElementById('sr-box').innerHTML = ''; return; }
   searchTimeout = setTimeout(async () => {
     document.getElementById('sr-box').innerHTML = '<div class="search-loading">searching...</div>';
-    const r = await searchBooks(t);
+    const r = await searchBooks(t, a);
     searchResults = r;
     let h = '';
     if (r.length) {
@@ -180,11 +181,11 @@ function openYearReadsModal() {
 
 // ── Screenshot Modal ──
 function openScreenshotModal() {
-  const recent = [...books].sort((a, b) => {
-    const ad = sessions.filter(s => s.book_id === a.id).map(s => s.date).sort().pop() || a.start_date;
-    const bd = sessions.filter(s => s.book_id === b.id).map(s => s.date).sort().pop() || b.start_date;
-    return bd.localeCompare(ad);
-  }).slice(0, 5);
+  // Reading books first (latest session first), then finished (latest finish date first)
+  const lastSession = (book) => sessions.filter(s => s.book_id === book.id).map(s => s.date).sort().pop() || book.start_date;
+  const reading = books.filter(b => b.status === 'reading').sort((a, b) => lastSession(b).localeCompare(lastSession(a)));
+  const finished = books.filter(b => b.status === 'finished').sort((a, b) => (b.finish_date || lastSession(b)).localeCompare(a.finish_date || lastSession(a)));
+  const recent = [...reading, ...finished].slice(0, 5);
 
   let h = '<h2>Bookmap ' + currentYear + '</h2>';
   const days = buildHeatmapData(currentYear);

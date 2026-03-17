@@ -20,6 +20,12 @@
   --amber-500: hsl(38, 92%, 50%);
   --orange-500: hsl(25, 95%, 53%);
   --muted-40: hsla(30, 15%, 75%, 0.4);
+  /* heatmap tile colors — light mode */
+  --tile-0: hsl(36, 20%, 89%);
+  --tile-1: hsl(45, 75%, 72%);
+  --tile-2: hsl(44, 96%, 56%);
+  --tile-3: hsl(32, 95%, 48%);
+  --tile-4: hsl(18, 92%, 42%);
 }
 
 /* ─── Dark mode ─── */
@@ -40,6 +46,12 @@ html.dark {
   --amber-500: hsl(38, 92%, 50%);
   --orange-500: hsl(25, 95%, 53%);
   --muted-40: hsla(25, 12%, 25%, 0.4);
+  /* heatmap tile colors — dark mode */
+  --tile-0: hsl(25, 14%, 22%);
+  --tile-1: hsl(54, 95%, 78%);
+  --tile-2: hsl(42, 96%, 52%);
+  --tile-3: hsl(30, 95%, 46%);
+  --tile-4: hsl(16, 92%, 40%);
 }
 
 body {
@@ -267,11 +279,11 @@ input::placeholder, textarea::placeholder { color: var(--muted-foreground); }
 .hm.sel { outline: 2px solid var(--foreground); outline-offset: 1px; }
 .hm.now { outline: 1px solid var(--amber-400); opacity: 1; animation: pulse 2s infinite; }
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.7} }
-.h0 { background: var(--muted-40); }
-.h1 { background: var(--amber-300-60); }
-.h2 { background: var(--amber-400); }
-.h3 { background: var(--amber-500); }
-.h4 { background: var(--orange-500); }
+.h0 { background: var(--tile-0); }
+.h1 { background: var(--tile-1); }
+.h2 { background: var(--tile-2); }
+.h3 { background: var(--tile-3); }
+.h4 { background: var(--tile-4); }
 .he { background: transparent; cursor: default; }
 .he:hover { outline: none; }
 
