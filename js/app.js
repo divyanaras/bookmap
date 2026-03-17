@@ -105,7 +105,7 @@ let isPasswordReset = false;
 function checkForRecoveryToken() {
   const hash = window.location.hash.substring(1);
   const params = new URLSearchParams(hash);
-  return params.get('type') === 'recovery' || !!params.get('access_token');
+  return params.get('type') === 'recovery';
 }
 
 function showPasswordResetForm() {
