@@ -43,7 +43,7 @@ async function handleAuth(e, mode) {
 
   try {
     const result = mode === 'signup'
-      ? await sb.auth.signUp({ email, password })
+      ? await sb.auth.signUp({ email, password, options: { emailRedirectTo: 'https://divyanaras.github.io/bookmap/' } })
       : await sb.auth.signInWithPassword({ email, password });
     if (result.error) throw result.error;
 
